@@ -12,14 +12,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Generate diffs
+        if: ${{ hashFiles('opensaas-sh/tools/patch.sh') != '' && hashFiles('opensaas-sh/tools/diff.sh') != '' }}
         run: |
           ./opensaas-sh/tools/patch.sh
           ./opensaas-sh/tools/diff.sh
 
       - name: Check for uncommitted changes
+        if: ${{ hashFiles('opensaas-sh/tools/patch.sh') != '' && hashFiles('opensaas-sh/tools/diff.sh') != '' }}
         run: |
           if [[ -n $(git status --porcelain) ]]; then
             echo "Error: There are uncommitted diff changes"
@@ -27,3 +29,8 @@ jobs:
             git status
             exit 1
           fi
+
+      - name: Skip when OpenSaaS diff tooling is absent
+        if: ${{ hashFiles('opensaas-sh/tools/patch.sh') == '' || hashFiles('opensaas-sh/tools/diff.sh') == '' }}
+        run: |
+          echo "Skipping diff check: opensaas-sh tooling is not present in this repository."

@@ -1,0 +1,14 @@
+version: 1
+standards:
+  - id: typescript-strict
+    category: global
+    path: global/typescript-strict.md
+    purpose: Enforce strict TypeScript settings and zero type-check errors.
+  - id: nextjs-auth-routing
+    category: frontend
+    path: frontend/nextjs-auth-routing.md
+    purpose: Define App Router auth route protection and redirect behavior.
+  - id: auth-minimum-coverage
+    category: testing
+    path: testing/auth-minimum-coverage.md
+    purpose: Require minimum tests for auth success, failure, and guarded routes.
