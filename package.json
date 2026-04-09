@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "test:auth": "vitest run src/lib/auth.test.ts src/lib/auth-routing.test.ts src/app/api/auth src/app/dashboard/page.test.tsx",
     "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
