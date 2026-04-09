@@ -1,6 +1,17 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import Link from "next/link";
+import { SESSION_COOKIE_NAME } from "@/lib/auth";
+import { resolveProtectedRouteAccess } from "@/lib/auth-routing";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value ?? null;
+  const access = resolveProtectedRouteAccess(token, "/dashboard");
+  if (!access.allowed && access.redirectTo) {
+    redirect(access.redirectTo);
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Dashboard header */}
@@ -10,7 +21,14 @@ export default function DashboardPage() {
             willdo<span className="text-primary">.work</span>
           </Link>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">My Agents</span>
+            <form action="/api/auth/logout" method="post">
+              <button
+                type="submit"
+                className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
+              >
+                Log out
+              </button>
+            </form>
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
               U
             </div>

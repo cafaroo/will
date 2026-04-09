@@ -1,15 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { sanitizeNextPath } from "@/lib/auth";
 
 interface AuthFormProps {
   mode: "sign-in" | "sign-up";
 }
 
 export function AuthForm({ mode }: AuthFormProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const nextPath = sanitizeNextPath(searchParams.get("next"));
 
   const isSignUp = mode === "sign-up";
   const title = isSignUp ? "Create your account" : "Welcome back";
@@ -21,9 +29,39 @@ export function AuthForm({ mode }: AuthFormProps) {
   const altLink = isSignUp ? "/sign-in" : "/sign-up";
   const altLinkText = isSignUp ? "Sign in" : "Sign up";
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // TODO: integrate with auth provider
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch("/api/auth/credentials", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          mode,
+        }),
+      });
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        setErrorMessage(result.error ?? "Unable to sign in. Please try again.");
+        return;
+      }
+      router.push(nextPath);
+      router.refresh();
+    } catch {
+      setErrorMessage("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  function handleGoogleContinue() {
+    window.location.assign(`/api/auth/google?next=${encodeURIComponent(nextPath)}`);
   }
 
   return (
@@ -39,6 +77,8 @@ export function AuthForm({ mode }: AuthFormProps) {
       <div className="mt-8 space-y-4">
         <button
           type="button"
+          onClick={handleGoogleContinue}
+          disabled={isSubmitting}
           className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium hover:bg-muted transition-colors"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -102,10 +142,16 @@ export function AuthForm({ mode }: AuthFormProps) {
           </div>
           <button
             type="submit"
+            disabled={isSubmitting}
             className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-hover transition-colors"
           >
-            {buttonText}
+            {isSubmitting ? "Working..." : buttonText}
           </button>
+          {errorMessage ? (
+            <p role="alert" className="text-sm text-red-600" aria-live="polite">
+              {errorMessage}
+            </p>
+          ) : null}
         </form>
       </div>
 
