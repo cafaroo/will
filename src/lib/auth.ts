@@ -121,7 +121,9 @@ export function getUserBySessionToken(token: string | null | undefined): AuthUse
   if (!session) {
     return null;
   }
-  const user = Array.from(usersByEmail.values()).find((candidate) => candidate.id === session.userId);
+  const user = Array.from(usersByEmail.values()).find(
+    (candidate) => candidate.id === session.userId,
+  );
   if (!user) {
     sessionsByToken.delete(session.token);
     return null;

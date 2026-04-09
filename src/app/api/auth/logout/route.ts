@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  buildSessionClearCookie,
-  getSessionTokenFromRequest,
-  invalidateSession,
-} from "@/lib/auth";
+import { buildSessionClearCookie, getSessionTokenFromRequest, invalidateSession } from "@/lib/auth";
 
 export async function POST(request: Request) {
   const token = getSessionTokenFromRequest(request);
